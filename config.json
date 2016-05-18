@@ -1,0 +1,13 @@
+{
+	"DateTimeFormatString": "02.01.2006 15:04:05",
+	"StackLevelTrace": 3,
+	"StackLevelInfo": 3,
+	"StackLevelWarn": 3,
+	"StackLevelError": 3,
+	"StdOut": true,
+	"FileOut": true,
+	"StdOutTrace": true,
+	"StdOutInfo": true,
+	"StdOutWarn": true,
+	"StdOutError": true
+}
