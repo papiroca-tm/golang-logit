@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"os"
 	"github.com/streadway/amqp"
+	"path/filepath"
 )
 
 var settings struct {
@@ -33,10 +34,9 @@ type Msg struct {
 
 func init() {
 	defer selfRecover()
-	dir, err := os.Getwd()
-	checkErr(err)
-	dirToConfig := dir + "/app/services/logit/config.json" // todo path ?
-	configFile, err := os.Open(dirToConfig)
+	absPath, _ := filepath.Abs("../github.com/papiroca-tm/golang-logit/logit/config.json")
+	fmt.Println("try to load config.json from:",absPath)
+	configFile, err := os.Open(absPath)
 	checkErr(err)
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&settings)
