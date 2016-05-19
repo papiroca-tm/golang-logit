@@ -1,11 +1,15 @@
-// чистилка файлов и папок превышающий срок хранения из конфига
-// сепаратор для файлов в конфиг
-// пути и имена файлов лога в конфиг
-// и читаем все вышесказанное из конфига
-//
-// перенести отправку меседжа на рабит сервер в отдельную функцию
+/*
+##todo list
+- чистилка файлов и папок превышающий срок хранения из конфига
+- сепаратор для файлов в конфиг
+- пути и имена файлов лога в конфиг
+- и читаем все вышесказанное из конфига
+- перенести отправку меседжа на рабит сервер в отдельную функцию
+*/
 
-// Package logit ...
+/*
+Package logit ...
+*/
 package logit
 
 import (
@@ -27,7 +31,9 @@ var settings struct {
 	StdOut, FileOut, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError bool
 }
 
-// Msg ...
+/*
+Msg ...
+*/
 type Msg struct {
 	MsgType    string
 	DtTimeStr  string
@@ -41,6 +47,9 @@ type Msg struct {
 	LogContext string
 }
 
+/*
+init ...
+*/
 func init() {
 	absPath, err := filepath.Abs("../github.com/papiroca-tm/golang-logit/logit/config.json")
 	failOnError(err, "ошибка получения абсолютного пути к файлу конфигурации")
@@ -53,7 +62,9 @@ func init() {
 	defer configFile.Close()
 }
 
-// commitMessage ...
+/*
+commitMessage ...
+*/
 func commitMessage(msgType string, stackLevel int, logContext string, logText string, errCode string) {
 	var message Msg
 	message.MsgType = msgType
@@ -106,12 +117,14 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 	failOnError(err, "Failed to publish a message")
 }
 
-// writeMsgToFile ..
+/*
+writeMsgToFile ...
+*/
 func writeMsgToFile(msgType string, message Msg) {
 	filePath := "c:/tmplog/tmplog2/" // todo from settings
-	fileName := "log.log" // todo from settings
-	s := "|" // todo from settings
-	
+	fileName := "log.log"            // todo from settings
+	s := "|"                         // todo from settings
+
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		err = os.MkdirAll(filePath, 0666)
 		failOnError(err, "ошибка создания директории")
@@ -120,13 +133,13 @@ func writeMsgToFile(msgType string, message Msg) {
 		_, err := os.Create(filePath + fileName)
 		failOnError(err, "ошибка создания файла")
 	}
-	var formatStr string	
+	var formatStr string
 	switch message.MsgType {
 	case "INFO", "WARN":
 		formatStr = "%s " + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s\n"
 	default:
-		formatStr = "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s\n"		
-	}	
+		formatStr = "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s\n"
+	}
 	str := fmt.Sprintf(
 		formatStr,
 		message.MsgType,
@@ -140,18 +153,23 @@ func writeMsgToFile(msgType string, message Msg) {
 		message.LogText,
 		message.LogContext,
 	)
-	writeStrToFile(filePath + fileName, str)
+	writeStrToFile(filePath+fileName, str)
 }
 
+/*
+writeStrToFile ...
+*/
 func writeStrToFile(file string, str string) {
 	f, err := os.OpenFile(file, os.O_APPEND, 0666)
 	failOnError(err, "ошибка открытия файла для записи")
 	n, err := f.WriteString(str)
-	failOnError(err, "ошибка записи строки в файл" + string(n))
+	failOnError(err, "ошибка записи строки в файл"+string(n))
 	defer f.Close()
 }
 
-// sendMsgToStdout ...
+/*
+sendMsgToStdout ...
+*/
 func sendMsgToStdout(msgType string, message Msg) {
 	formatStr := "%s %s :%s:%s:%s:%s:%s:%s: %s\n"
 	switch msgType {
@@ -176,12 +194,16 @@ func sendMsgToStdout(msgType string, message Msg) {
 	}
 }
 
-// stdPrint ...
+/*
+stdPrint ...
+*/
 func stdPrint(fmtStr string, msg Msg) {
 	fmt.Printf(fmtStr, msg.MsgType, msg.DtTimeStr, msg.ErrCode, msg.AppName, msg.PkgName, msg.ModuleName, msg.FuncName, msg.Line, msg.LogText)
 }
 
-// failOnError ...
+/*
+failOnError ...
+*/
 func failOnError(err error, msg string) {
 	if err != nil {
 		fmt.Printf("%s: %s\n", msg, err)
@@ -189,25 +211,33 @@ func failOnError(err error, msg string) {
 	}
 }
 
-// strToTime ...
+/*
+strToTime ...
+*/
 func strToTime(s string) time.Time {
 	t, err := time.Parse(settings.DateTimeFormatString, s)
 	failOnError(err, "ошибка парсинга времени из строки в time.Time")
 	return t
 }
 
-// timeToStr ...
+/*
+timeToStr ...
+*/
 func timeToStr(t time.Time) string {
 	return t.Format(settings.DateTimeFormatString)
 }
 
-// getAppName ...
+/*
+getAppName ...
+*/
 func getAppName() string {
 	appName := strings.Split(os.Args[0], "/")
 	return appName[len(appName)-1]
 }
 
-// getPkgName ...
+/*
+getPkgName ...
+*/
 func getPkgName(stackLevel int) string {
 	pc, _, _, _ := runtime.Caller(stackLevel)
 	functionObject := runtime.FuncForPC(pc)
@@ -216,14 +246,18 @@ func getPkgName(stackLevel int) string {
 	return sPkg[len(sPkg)-1]
 }
 
-// getModuleName ...
+/*
+getModuleName ...
+*/
 func getModuleName(stackLevel int) string {
 	_, modulePathName, _, _ := runtime.Caller(stackLevel)
 	sModule := strings.Split(modulePathName, "/")
 	return sModule[len(sModule)-1]
 }
 
-// getFuncName ...
+/*
+getFuncName ...
+*/
 func getFuncName(stackLevel int) string {
 	pc, _, _, _ := runtime.Caller(stackLevel)
 	functionObject := runtime.FuncForPC(pc)
@@ -231,35 +265,47 @@ func getFuncName(stackLevel int) string {
 	return arr[len(arr)-1]
 }
 
-// getLine ...
+/*
+getLine ...
+*/
 func getLine(stackLevel int) string {
 	_, _, line, _ := runtime.Caller(stackLevel)
 	return strconv.Itoa(line)
 }
 
-// msgToJSON ...
+/*
+msgToJSON ...
+*/
 func msgToJSON(m Msg) (string, error) {
 	jsonMsg, err := json.Marshal(m)
 	failOnError(err, "ошибка парсинга сообщения в JSON")
 	return string(jsonMsg), nil
 }
 
-// TRACE ...
+/*
+TRACE ...
+*/
 func TRACE(logText, logContext string) {
 	commitMessage("TRACE", settings.StackLevelTrace, logContext, logText, "")
 }
 
-// INFO ...
+/*
+INFO ...
+*/
 func INFO(logText, logContext string) {
 	commitMessage("INFO", settings.StackLevelInfo, logContext, logText, "")
 }
 
-// WARN ...
+/*
+WARN ...
+*/
 func WARN(logText, logContext string) {
 	commitMessage("WARN", settings.StackLevelWarn, logContext, logText, "")
 }
 
-// ERROR ...
+/*
+ERROR ...
+*/
 func ERROR(logText, logContext, errCode string) {
 	commitMessage("ERROR", settings.StackLevelError, logContext, logText, errCode)
 }
