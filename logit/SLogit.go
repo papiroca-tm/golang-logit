@@ -12,6 +12,9 @@ Package logit ...
 */
 package logit
 
+/*
+import ...
+*/
 import (
 	"encoding/json"
 	"fmt"
@@ -25,6 +28,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
+/*
+settings ...
+*/
 var settings struct {
 	DateTimeFormatString                                              string
 	StackLevelTrace, StackLevelInfo, StackLevelWarn, StackLevelError  int
