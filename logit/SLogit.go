@@ -1,3 +1,11 @@
+// чистилка файлов и папок превышающий срок хранения из конфига
+// сепаратор для файлов в конфиг
+// пути и имена файлов лога в конфиг
+// и читаем все вышесказанное из конфига
+//
+// перенести отправку меседжа на рабит сервер в отдельную функцию
+
+// Package logit ...
 package logit
 
 import (
@@ -42,6 +50,7 @@ func init() {
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&settings)
 	failOnError(err, "ошибка парсинга файла конфигурации")
+	defer configFile.Close()
 }
 
 // commitMessage ...
@@ -63,7 +72,6 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 	}
 	// выведем в текстовый файл если стоит в настройках
 	if settings.FileOut == true {
-		// todo пишем лог в файл
 		writeMsgToFile(msgType, message)
 	}
 	// отправляем месседж серверу
@@ -100,7 +108,47 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 
 // writeMsgToFile ..
 func writeMsgToFile(msgType string, message Msg) {
+	filePath := "c:/tmplog/tmplog2/" // todo from settings
+	fileName := "log.log" // todo from settings
+	s := "|" // todo from settings
 	
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		err = os.MkdirAll(filePath, 0666)
+		failOnError(err, "ошибка создания директории")
+	}
+	if _, err := os.Stat(filePath + fileName); os.IsNotExist(err) {
+		_, err := os.Create(filePath + fileName)
+		failOnError(err, "ошибка создания файла")
+	}
+	var formatStr string	
+	switch message.MsgType {
+	case "INFO", "WARN":
+		formatStr = "%s " + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s\n"
+	default:
+		formatStr = "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s" + s + "%s\n"		
+	}	
+	str := fmt.Sprintf(
+		formatStr,
+		message.MsgType,
+		message.DtTimeStr,
+		message.ErrCode,
+		message.AppName,
+		message.PkgName,
+		message.ModuleName,
+		message.FuncName,
+		message.Line,
+		message.LogText,
+		message.LogContext,
+	)
+	writeStrToFile(filePath + fileName, str)
+}
+
+func writeStrToFile(file string, str string) {
+	f, err := os.OpenFile(file, os.O_APPEND, 0666)
+	failOnError(err, "ошибка открытия файла для записи")
+	n, err := f.WriteString(str)
+	failOnError(err, "ошибка записи строки в файл" + string(n))
+	defer f.Close()
 }
 
 // sendMsgToStdout ...
