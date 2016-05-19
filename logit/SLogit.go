@@ -34,8 +34,9 @@ type Msg struct {
 }
 
 func init() {
-	absPath, _ := filepath.Abs("../github.com/papiroca-tm/golang-logit/logit/config.json")
-	fmt.Println("try to load config.json from:", absPath)
+	absPath, err := filepath.Abs("../github.com/papiroca-tm/golang-logit/logit/config.json")
+	failOnError(err, "ошибка получения абсолютного пути к файлу конфигурации")
+	//fmt.Println("try to load config.json from:", absPath)
 	configFile, err := os.Open(absPath)
 	failOnError(err, "ошибка чтения файла конфигурации")
 	jsonParser := json.NewDecoder(configFile)
@@ -43,8 +44,8 @@ func init() {
 	failOnError(err, "ошибка парсинга файла конфигурации")
 }
 
-// sendMessage ...
-func sendMessage(msgType string, stackLevel int, logContext string, logText string, errCode string) {
+// commitMessage ...
+func commitMessage(msgType string, stackLevel int, logContext string, logText string, errCode string) {
 	var message Msg
 	message.MsgType = msgType
 	message.DtTimeStr = timeToStr(time.Now())
@@ -58,31 +59,12 @@ func sendMessage(msgType string, stackLevel int, logContext string, logText stri
 	message.LogContext = logContext
 	// выведем в консоль если стоит в настройках
 	if settings.StdOut == true {
-		formatStr := "%s %s :%s:%s:%s:%s:%s:%s: %s\n"
-		switch msgType {
-		case "TRACE":
-			if settings.StdOutTrace == true {
-				stdPrint(formatStr, message)
-			}
-		case "INFO":
-			formatStr = "%s  %s :%s:%s:%s:%s:%s:%s: %s\n"
-			if settings.StdOutInfo == true {
-				stdPrint(formatStr, message)
-			}
-		case "WARN":
-			formatStr = "%s  %s :%s:%s:%s:%s:%s:%s: %s\n"
-			if settings.StdOutWarn == true {
-				stdPrint(formatStr, message)
-			}
-		case "ERROR":
-			if settings.StdOutError == true {
-				stdPrint(formatStr, message)
-			}
-		}
+		sendMsgToStdout(msgType, message)
 	}
 	// выведем в текстовый файл если стоит в настройках
 	if settings.FileOut == true {
 		// todo пишем лог в файл
+		writeMsgToFile(msgType, message)
 	}
 	// отправляем месседж серверу
 	jsonMsg, err := msgToJSON(message)
@@ -114,6 +96,36 @@ func sendMessage(msgType string, stackLevel int, logContext string, logText stri
 		},
 	)
 	failOnError(err, "Failed to publish a message")
+}
+
+// writeMsgToFile ..
+func writeMsgToFile(msgType string, message Msg) {
+	
+}
+
+// sendMsgToStdout ...
+func sendMsgToStdout(msgType string, message Msg) {
+	formatStr := "%s %s :%s:%s:%s:%s:%s:%s: %s\n"
+	switch msgType {
+	case "TRACE":
+		if settings.StdOutTrace == true {
+			stdPrint(formatStr, message)
+		}
+	case "INFO":
+		formatStr = "%s  %s :%s:%s:%s:%s:%s:%s: %s\n"
+		if settings.StdOutInfo == true {
+			stdPrint(formatStr, message)
+		}
+	case "WARN":
+		formatStr = "%s  %s :%s:%s:%s:%s:%s:%s: %s\n"
+		if settings.StdOutWarn == true {
+			stdPrint(formatStr, message)
+		}
+	case "ERROR":
+		if settings.StdOutError == true {
+			stdPrint(formatStr, message)
+		}
+	}
 }
 
 // stdPrint ...
@@ -186,25 +198,25 @@ func msgToJSON(m Msg) (string, error) {
 
 // TRACE ...
 func TRACE(logText, logContext string) {
-	sendMessage("TRACE", settings.StackLevelTrace, logContext, logText, "")
+	commitMessage("TRACE", settings.StackLevelTrace, logContext, logText, "")
 }
 
 // INFO ...
 func INFO(logText, logContext string) {
-	sendMessage("INFO", settings.StackLevelInfo, logContext, logText, "")
+	commitMessage("INFO", settings.StackLevelInfo, logContext, logText, "")
 }
 
 // WARN ...
 func WARN(logText, logContext string) {
-	sendMessage("WARN", settings.StackLevelWarn, logContext, logText, "")
+	commitMessage("WARN", settings.StackLevelWarn, logContext, logText, "")
 }
 
 // ERROR ...
 func ERROR(logText, logContext, errCode string) {
-	sendMessage("ERROR", settings.StackLevelError, logContext, logText, errCode)
+	commitMessage("ERROR", settings.StackLevelError, logContext, logText, errCode)
 }
 
-
+// todo разработать какой то перехват паники
 // selfRecover ...
 // func selfRecover() (err error) {
 // 	fName := getFuncName(2)
