@@ -85,9 +85,10 @@ func sendMessage(msgType string, stackLevel int, logContext string, logText stri
 		// todo пишем лог в файл
 	}
 	// отправляем месседж серверу
-	jsonMsg, _ := msgToJSON(message) // todo _ => err
+	jsonMsg, err := msgToJSON(message)
+	failOnError(err, "ошибка msgToJSON(message)")
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	failOnError(err, "Failed to connect to RabbitMQ") // todo failOnError => self func
+	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
