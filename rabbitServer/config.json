@@ -1,0 +1,14 @@
+{
+	"DateTimeFormatString": "02.01.2006 15:04:05",
+	"StdOut": true,
+	"FileOut": true,
+	"FileOutMethod": "json",
+	"MQconnectStr": "amqp://guest:guest@localhost:5672/",
+	"StdOutTrace": true,
+	"StdOutInfo": true,
+	"StdOutWarn": true,
+	"StdOutError": true,
+	"LogFilePath": "./logs/",
+	"LogFileName": "log.log",
+	"LogFileSeparator": "|"
+}
