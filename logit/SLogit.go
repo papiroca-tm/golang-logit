@@ -1,10 +1,4 @@
 /*
-##todo list
-- чистилка файлов и папок превышающий срок хранения из конфига
-- перенести отправку меседжа на рабит сервер в отдельную функцию
-*/
-
-/*
 Package logit ...
 */
 package logit
@@ -29,9 +23,9 @@ import (
 settings ...
 */
 var settings struct {
-	DateTimeFormatString, LogFilePath, LogFileName, LogFileSeparator  string
-	StackLevelTrace, StackLevelInfo, StackLevelWarn, StackLevelError  int
-	StdOut, FileOut, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError bool
+	DateTimeFormatString, LogFilePath, LogFileName, LogFileSeparator, MQconnectStr string
+	StackLevelTrace, StackLevelInfo, StackLevelWarn, StackLevelError               int
+	StdOut, FileOut, MQout, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError       bool
 }
 
 /*
@@ -89,9 +83,18 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 		writeMsgToFile(msgType, message)
 	}
 	// отправляем месседж серверу
+	if settings.MQout == true {
+		sendMsgToMQ(msgType, message)
+	}
+}
+
+/*
+sendMsgToMQ ...
+*/
+func sendMsgToMQ(msgType string, message Msg) {
 	jsonMsg, err := msgToJSON(message)
 	failOnError(err, "ошибка msgToJSON(message)")
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial(settings.MQconnectStr)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 	ch, err := conn.Channel()
@@ -124,7 +127,8 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 writeMsgToFile ...
 */
 func writeMsgToFile(msgType string, message Msg) {
-	filePath := settings.LogFilePath
+	t := time.Now()
+	filePath := settings.LogFilePath + "/" + t.Format("02-01-2006") + "/"
 	fileName := settings.LogFileName
 	s := settings.LogFileSeparator
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
