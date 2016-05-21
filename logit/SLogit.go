@@ -1,9 +1,6 @@
 /*
 ##todo list
 - чистилка файлов и папок превышающий срок хранения из конфига
-- сепаратор для файлов в конфиг
-- пути и имена файлов лога в конфиг
-- и читаем все вышесказанное из конфига
 - перенести отправку меседжа на рабит сервер в отдельную функцию
 */
 
@@ -32,7 +29,7 @@ import (
 settings ...
 */
 var settings struct {
-	DateTimeFormatString                                              string
+	DateTimeFormatString, LogFilePath, LogFileName, LogFileSeparator  string
 	StackLevelTrace, StackLevelInfo, StackLevelWarn, StackLevelError  int
 	StdOut, FileOut, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError bool
 }
@@ -127,10 +124,9 @@ func commitMessage(msgType string, stackLevel int, logContext string, logText st
 writeMsgToFile ...
 */
 func writeMsgToFile(msgType string, message Msg) {
-	filePath := "c:/tmplog/tmplog2/" // todo from settings
-	fileName := "log.log"            // todo from settings
-	s := "|"                         // todo from settings
-
+	filePath := settings.LogFilePath
+	fileName := settings.LogFileName
+	s := settings.LogFileSeparator
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		err = os.MkdirAll(filePath, 0666)
 		failOnError(err, "ошибка создания директории")

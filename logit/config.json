@@ -9,5 +9,8 @@
 	"StdOutTrace": true,
 	"StdOutInfo": true,
 	"StdOutWarn": true,
-	"StdOutError": true
+	"StdOutError": true,
+	"LogFilePath": "./logs/",
+	"LogFileName": "log.log",
+	"LogFileSeparator": "|"
 }
