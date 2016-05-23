@@ -48,7 +48,7 @@ type Msg struct {
 init ...
 */
 func init() {
-	absPath, err := filepath.Abs("../github.com/papiroca-tm/golang-logit/logit/config.json")
+	absPath, err := filepath.Abs("logitConfig.json") //"c:/goWorks/src/github.com/papiroca-tm/golang-logit/logit/config.json"
 	failOnError(err, "ошибка получения абсолютного пути к файлу конфигурации")
 	//fmt.Println("try to load config.json from:", absPath)
 	configFile, err := os.Open(absPath)
