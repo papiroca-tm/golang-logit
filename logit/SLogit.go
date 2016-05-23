@@ -51,9 +51,9 @@ func init() {
 	// приседания для того что бы при unit-тестах из правильного места читался файл конфига
 	_, filename, _, _ := runtime.Caller(1)
 	if strings.Index(filename, "SLogit.go") > 0 {
-		filename = strings.Trim(filename, "SLogit.go") + "/logitConfig.json"
+		filename = strings.Trim(filename, "SLogit.go") + "/config.json"
 	} else {
-		filename = strings.Trim(filename, "SLogit_test.go") + "/logitConfig.json"
+		filename = strings.Trim(filename, "SLogit_test.go") + "/config.json"
 	}
 	absPath, err := filepath.Abs(filename)
 	failOnError(err, "ошибка получения абсолютного пути к файлу конфигурации")
