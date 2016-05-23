@@ -48,9 +48,15 @@ type Msg struct {
 init ...
 */
 func init() {
-	absPath, err := filepath.Abs("logitConfig.json") //"c:/goWorks/src/github.com/papiroca-tm/golang-logit/logit/config.json"
+	// приседания для того что бы при unit-тестах из правильного места читался файл конфига
+	_, filename, _, _ := runtime.Caller(1)
+	if strings.Index(filename, "SLogit.go") > 0 {
+		filename = strings.Trim(filename, "SLogit.go") + "/logitConfig.json"
+	} else {
+		filename = strings.Trim(filename, "SLogit_test.go") + "/logitConfig.json"
+	}
+	absPath, err := filepath.Abs(filename)
 	failOnError(err, "ошибка получения абсолютного пути к файлу конфигурации")
-	//fmt.Println("try to load config.json from:", absPath)
 	configFile, err := os.Open(absPath)
 	failOnError(err, "ошибка чтения файла конфигурации")
 	jsonParser := json.NewDecoder(configFile)
