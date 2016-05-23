@@ -1,0 +1,4 @@
+TRACE|23.05.2016 23:28:57||logsGraber.exe|controllers|app.go|Index|15|logText|logContext
+INFO |23.05.2016 23:28:57||logsGraber.exe|controllers|app.go|Index|16|logText|logContext
+WARN |23.05.2016 23:28:57||logsGraber.exe|controllers|app.go|Index|17|logText|logContext
+ERROR|23.05.2016 23:28:57|errCode|logsGraber.exe|controllers|app.go|Index|18|logText|logContext

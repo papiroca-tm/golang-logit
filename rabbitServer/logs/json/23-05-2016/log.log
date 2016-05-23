@@ -1,0 +1,4 @@
+{"MsgType":"TRACE","DtTimeStr":"23.05.2016 23:29:18","ErrCode":"","AppName":"logsGraber.exe","PkgName":"controllers","ModuleName":"app.go","FuncName":"Index","Line":"15","LogText":"logText","LogContext":"logContext"}
+{"MsgType":"INFO","DtTimeStr":"23.05.2016 23:29:18","ErrCode":"","AppName":"logsGraber.exe","PkgName":"controllers","ModuleName":"app.go","FuncName":"Index","Line":"16","LogText":"logText","LogContext":"logContext"}
+{"MsgType":"WARN","DtTimeStr":"23.05.2016 23:29:18","ErrCode":"","AppName":"logsGraber.exe","PkgName":"controllers","ModuleName":"app.go","FuncName":"Index","Line":"17","LogText":"logText","LogContext":"logContext"}
+{"MsgType":"ERROR","DtTimeStr":"23.05.2016 23:29:18","ErrCode":"errCode","AppName":"logsGraber.exe","PkgName":"controllers","ModuleName":"app.go","FuncName":"Index","Line":"18","LogText":"logText","LogContext":"logContext"}
