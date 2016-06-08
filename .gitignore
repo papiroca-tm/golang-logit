@@ -1,2 +1,4 @@
 /logit/logs
 /rabbitServer/logs
+/rabbitServer/logs.db
+/rabbitServer/logs.db-journal

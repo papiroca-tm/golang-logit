@@ -1,6 +1,10 @@
 package main
 
 import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/streadway/amqp"
+
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,7 +12,7 @@ import (
 	"time"
 	//"strconv"
 	//"strings"
-	"github.com/streadway/amqp"
+	//"fmt"
 )
 
 /*
@@ -16,7 +20,7 @@ settings ...
 */
 var settings struct {
 	DateTimeFormatString, LogFilePath, LogFileName, LogFileSeparator, MQconnectStr string
-	StdOut, FileOut, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError              bool
+	StdOut, FileOut, SqliteOut, StdOutTrace, StdOutInfo, StdOutWarn, StdOutError   bool
 	FileOutMethod                                                                  string
 }
 
@@ -35,6 +39,8 @@ type Msg struct {
 	LogText    string
 	LogContext string
 }
+
+var db *sql.DB
 
 /*
 failOnError ...
@@ -58,7 +64,38 @@ func init() {
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&settings)
 	failOnError(err, "ошибка парсинга файла конфигурации")
+	if settings.SqliteOut == true {
+		db, err = sql.Open("sqlite3", "./logs.db")
+		failOnError(err, "ошибка соединения/создания БД ./logs.db")
+		fmt.Println("успешное подключение/создание БД")
+		_, err = createTableLogs()
+		failOnError(err, "ошибка создания таблицы")
+		fmt.Println("успешная проверка/создание таблицы логов")
+	}
 	defer configFile.Close()
+}
+
+/*
+createTableLogs ...
+*/
+func createTableLogs() (result sql.Result, err error) {
+	query := `CREATE TABLE IF NOT EXISTS 't_logs' (
+				'c_msg_type' TEXT NOT NULL,
+				'c_timestamp' TEXT NOT NULL,
+				'c_err_code' TEXT NOT NULL,
+				'c_app_name' TEXT NOT NULL,
+				'c_pkg_name' TEXT NOT NULL,
+				'c_module_name' TEXT NOT NULL,
+				'c_func_name' TEXT NOT NULL,
+				'c_line' TEXT NOT NULL,
+				'c_log_text' TEXT NOT NULL,
+				'c_err_context' TEXT NOT NULL);`
+
+	result, err = db.Exec(query)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 /*
@@ -125,6 +162,39 @@ func receiveMessage(msgByteArr []byte) {
 	if settings.FileOut == true {
 		writeMsgToFile(message, settings.FileOutMethod)
 	}
+	// выведем в БД sqlite3 если стоит в настройках
+	if settings.SqliteOut == true {
+		writeMsgToSqlite(message)
+	}
+}
+
+/*
+writeMsgToSqlite ...
+*/
+func writeMsgToSqlite(message Msg) (result sql.Result, err error) {
+	query := `INSERT INTO t_logs(
+				c_msg_type,
+				c_timestamp,
+				c_err_code,
+				c_app_name,
+				c_pkg_name,
+				c_module_name,
+				c_func_name,
+				c_line,
+				c_log_text,
+				c_err_context) VALUES (?,?,?,?,?,?,?,?,?,?);`
+	stmt, err := db.Prepare(query)
+	failOnError(err, "ошибка db.Prepare(query)")
+	res, err := stmt.Exec(message.MsgType, message.DtTimeStr, message.ErrCode, message.AppName, message.PkgName, message.ModuleName, message.FuncName, message.Line, message.LogText, message.LogContext)
+	failOnError(err, "ошибка stmt.Exec(params...)")
+	id, err := res.LastInsertId()
+	failOnError(err, "ошибка res.LastInsertId()")
+	fmt.Println("LastInsertId", id)
+	result, err = db.Exec(query)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 /*
